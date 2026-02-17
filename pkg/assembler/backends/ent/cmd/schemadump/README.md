@@ -9,14 +9,26 @@ GUAC's Ent backend maintains a detailed schema in `pkg/assembler/backends/ent/mi
 - **Edges**: 
     - **One-to-Many**: Discovered via foreign key constraints.
     - **Many-to-Many**: Discovered via join tables in the Ent schema.
-- **Static Typing**: Maps Ent Go types to standardized database types (e.g., `UUID`, `STRING`, `INT64`, `TIMESTAMP`, `DOUBLE`).
+- **Static Typing**: Maps Ent Go types to standardized database types (e.g., `UUID`, `STRING`, `INT64`, `INT32`, `TIMESTAMP`, `DOUBLE`).
+- **Natural Keys**: Extracts unique constraints (indexes) from the schema to identify natural keys.
+  - Foreign keys in natural keys are mapped to their semantic names (e.g., `package_id` becomes `package`) for better readability in graph generation.
 
 ## Usage
 
 To run the utility and generate a JSON schema dump:
 
 ```bash
+# Generate JSON output (default)
 go run pkg/assembler/backends/ent/cmd/schemadump/main.go > schema_dump.json
+
+# Generate Markdown documentation
+go run pkg/assembler/backends/ent/cmd/schemadump/main.go -o markdown > schema.md
+
+# Generate KuzuDB DDL
+go run pkg/assembler/backends/ent/cmd/schemadump/main.go -o kuzu > schema.ddl
+
+# Automate all formats into generated/ directory
+./pkg/assembler/backends/ent/cmd/schemadump/generate.sh
 ```
 
 ## How It Works
@@ -59,9 +71,21 @@ CREATE REL TABLE dependencies (
 ```
 
 ### 2. Ontological Documentation
-The JSON dump serves as a machine-readable ontology. It can be fed into documentation generators to produce an interactive "Knowledge Graph" of the GUAC data model, allowing users to explore how `Packages`, `Artifacts`, and `Vulnerabilities` connect without reading source code.
+The utility supports generating a "clean" Markdown representation of the schema using the `-o markdown` flag. This documentation includes:
+- **Nodes**: With property tables, UUID types, and natural key definitions.
+- **Edges**: A summary table of relationships, symbols, and edge properties.
 
-### 3. Python ETL Pipeline (DuckDB to RyuGraph)
+### 3. KuzuDB DDL Generation
+The utility can generate a complete DDL script for initializing a KuzuDB database:
+`go run pkg/assembler/backends/ent/cmd/schemadump/main.go -o kuzu > schema.ddl`
+
+This script contains:
+- `CREATE NODE TABLE` statements for all entities, with primary keys.
+- `CREATE REL TABLE` statements for all edges, including their properties.
+
+The output is compatible with the [Cypher](https://kuzudb.github.io/docs/cypher/) dialect used by KuzuDB.
+
+### 4. Machine-Readable Ontology (JSON)
 A robust ingestion pipeline can be built using Python and DuckDB to bridge the gap between GUAC's Postgres data and RyuGraph.
 
 **Architecture:**
@@ -89,7 +113,7 @@ for node in schema['nodes']:
     pass
 ```
 
-### 4. Advanced Graph Analysis (Cypher)
+### 5. Advanced Graph Analysis (Cypher)
 Once loaded into RyuGraph/KuzuDB, you can run powerful Cypher queries for supply chain insights.
 
 **Scenario: Transitive Dependency Search**
