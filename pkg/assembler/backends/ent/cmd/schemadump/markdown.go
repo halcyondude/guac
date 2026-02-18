@@ -13,8 +13,17 @@ func generateMarkdown(dump SchemaDump) {
 	for _, node := range dump.Nodes {
 		fmt.Printf("### %s\n", node.Table)
 
-		// Fields Table
-		fmt.Println("#### Fields")
+		if len(node.NaturalKeys) > 0 {
+			fmt.Printf("#### %s: Natural Keys\n", node.Table)
+			fmt.Println("| Keys |")
+			fmt.Println("| --- |")
+			for _, key := range node.NaturalKeys {
+				fmt.Printf("| [%s] |\n", strings.Join(key, ", "))
+			}
+			fmt.Println()
+		}
+
+		fmt.Printf("#### %s: Fields\n", node.Table)
 		fmt.Println("| Field | Type | Comment |")
 		fmt.Println("| --- | --- | --- |")
 		for _, prop := range node.Properties {
@@ -22,27 +31,12 @@ func generateMarkdown(dump SchemaDump) {
 		}
 		fmt.Println()
 
-		// Edges Table
 		if len(node.Edges) > 0 {
-			fmt.Println("#### Edges")
+			fmt.Printf("#### %s: Edges\n", node.Table)
 			fmt.Println("| To | Edge Field | On Delete |")
 			fmt.Println("| --- | --- | --- |")
 			for _, edge := range node.Edges {
-				// We don't have exact OnDelete or Field info from `Edge` struct directly as it was simplified.
-				// But we can show Symbol and Column.
-				// User example: | To | Symbol | Column |
 				fmt.Printf("| %s | %s | %s |\n", edge.ToTable, edge.Symbol, edge.Column)
-			}
-			fmt.Println()
-		}
-
-		// Natural Keys Table
-		if len(node.NaturalKeys) > 0 {
-			fmt.Println("#### Natural Keys (Composite Unique Constraints)")
-			fmt.Println("| Keys |")
-			fmt.Println("| --- |")
-			for _, key := range node.NaturalKeys {
-				fmt.Printf("| `[%s]` |\n", strings.Join(key, ", "))
 			}
 			fmt.Println()
 		}

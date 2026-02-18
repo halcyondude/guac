@@ -2,20 +2,26 @@
 
 ## Entities
 ### artifacts
-#### Fields
+#### artifacts: Natural Keys
+| Keys |
+| --- |
+| [algorithm, digest] |
+
+#### artifacts: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
 | algorithm | STRING |  |
 | digest | STRING |  |
 
-#### Natural Keys (Composite Unique Constraints)
+### bill_of_materials
+#### bill_of_materials: Natural Keys
 | Keys |
 | --- |
-| `[algorithm, digest]` |
+| [algorithm, digest, uri, download_location, known_since, included_packages_hash, included_artifacts_hash, included_dependencies_hash, included_occurrences_hash, origin, collector, document_ref, package] |
+| [algorithm, digest, uri, download_location, known_since, included_packages_hash, included_artifacts_hash, included_dependencies_hash, included_occurrences_hash, origin, collector, document_ref, artifact] |
 
-### bill_of_materials
-#### Fields
+#### bill_of_materials: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
@@ -34,7 +40,7 @@
 | package_id | UUID |  |
 | artifact_id | UUID |  |
 
-#### Edges
+#### bill_of_materials: Edges
 | To | Edge Field | On Delete |
 | --- | --- | --- |
 | package_versions | bill_of_materials_package_versions_package | package_id |
@@ -44,26 +50,28 @@
 | dependencies | bill_of_materials_included_dependencies |  |
 | occurrences | bill_of_materials_included_occurrences |  |
 
-#### Natural Keys (Composite Unique Constraints)
+### builders
+#### builders: Natural Keys
 | Keys |
 | --- |
-| `[algorithm, digest, uri, download_location, known_since, included_packages_hash, included_artifacts_hash, included_dependencies_hash, included_occurrences_hash, origin, collector, document_ref, package]` |
-| `[algorithm, digest, uri, download_location, known_since, included_packages_hash, included_artifacts_hash, included_dependencies_hash, included_occurrences_hash, origin, collector, document_ref, artifact]` |
+| [uri] |
 
-### builders
-#### Fields
+#### builders: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
 | uri | STRING | The URI of the builder, used as a unique identifier in the graph query |
 
-#### Natural Keys (Composite Unique Constraints)
+### certifications
+#### certifications: Natural Keys
 | Keys |
 | --- |
-| `[uri]` |
+| [type, justification, origin, collector, source, known_since, document_ref] |
+| [type, justification, origin, collector, package_version, known_since, document_ref] |
+| [type, justification, origin, collector, package_name, known_since, document_ref] |
+| [type, justification, origin, collector, artifact, known_since, document_ref] |
 
-### certifications
-#### Fields
+#### certifications: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
@@ -78,7 +86,7 @@
 | package_name_id | UUID |  |
 | artifact_id | UUID |  |
 
-#### Edges
+#### certifications: Edges
 | To | Edge Field | On Delete |
 | --- | --- | --- |
 | source_names | certifications_source_names_source | source_id |
@@ -86,16 +94,14 @@
 | package_names | certifications_package_names_all_versions | package_name_id |
 | artifacts | certifications_artifacts_artifact | artifact_id |
 
-#### Natural Keys (Composite Unique Constraints)
+### certify_legals
+#### certify_legals: Natural Keys
 | Keys |
 | --- |
-| `[type, justification, origin, collector, source, known_since, document_ref]` |
-| `[type, justification, origin, collector, package_version, known_since, document_ref]` |
-| `[type, justification, origin, collector, package_name, known_since, document_ref]` |
-| `[type, justification, origin, collector, artifact, known_since, document_ref]` |
+| [declared_license, justification, origin, collector, declared_licenses_hash, discovered_licenses_hash, source] |
+| [declared_license, justification, origin, collector, declared_licenses_hash, discovered_licenses_hash, package] |
 
-### certify_legals
-#### Fields
+#### certify_legals: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
@@ -112,7 +118,7 @@
 | package_id | UUID |  |
 | source_id | UUID |  |
 
-#### Edges
+#### certify_legals: Edges
 | To | Edge Field | On Delete |
 | --- | --- | --- |
 | package_versions | certify_legals_package_versions_package | package_id |
@@ -120,14 +126,13 @@
 | licenses | certify_legal_declared_licenses |  |
 | licenses | certify_legal_discovered_licenses |  |
 
-#### Natural Keys (Composite Unique Constraints)
+### certify_scorecards
+#### certify_scorecards: Natural Keys
 | Keys |
 | --- |
-| `[declared_license, justification, origin, collector, declared_licenses_hash, discovered_licenses_hash, source]` |
-| `[declared_license, justification, origin, collector, declared_licenses_hash, discovered_licenses_hash, package]` |
+| [source, origin, collector, scorecard_version, scorecard_commit, aggregate_score, time_scanned, checks_hash, document_ref] |
 
-### certify_scorecards
-#### Fields
+#### certify_scorecards: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
@@ -142,18 +147,19 @@
 | checks_hash | STRING | A SHA1 of the checks fields after sorting keys, used to ensure uniqueness of scorecard records. |
 | source_id | UUID |  |
 
-#### Edges
+#### certify_scorecards: Edges
 | To | Edge Field | On Delete |
 | --- | --- | --- |
 | source_names | certify_scorecards_source_names_source | source_id |
 
-#### Natural Keys (Composite Unique Constraints)
+### certify_vexes
+#### certify_vexes: Natural Keys
 | Keys |
 | --- |
-| `[source, origin, collector, scorecard_version, scorecard_commit, aggregate_score, time_scanned, checks_hash, document_ref]` |
+| [known_since, justification, status, origin, collector, document_ref, vulnerability, package] |
+| [known_since, justification, status, origin, collector, document_ref, vulnerability, artifact] |
 
-### certify_vexes
-#### Fields
+#### certify_vexes: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
@@ -169,21 +175,20 @@
 | artifact_id | UUID |  |
 | vulnerability_id | UUID |  |
 
-#### Edges
+#### certify_vexes: Edges
 | To | Edge Field | On Delete |
 | --- | --- | --- |
 | package_versions | certify_vexes_package_versions_package | package_id |
 | artifacts | certify_vexes_artifacts_artifact | artifact_id |
 | vulnerability_ids | certify_vexes_vulnerability_ids_vulnerability | vulnerability_id |
 
-#### Natural Keys (Composite Unique Constraints)
+### certify_vulns
+#### certify_vulns: Natural Keys
 | Keys |
 | --- |
-| `[known_since, justification, status, origin, collector, document_ref, vulnerability, package]` |
-| `[known_since, justification, status, origin, collector, document_ref, vulnerability, artifact]` |
+| [package, vulnerability, collector, scanner_uri, scanner_version, origin, db_uri, db_version] |
 
-### certify_vulns
-#### Fields
+#### certify_vulns: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
@@ -198,19 +203,19 @@
 | vulnerability_id | UUID |  |
 | package_id | UUID |  |
 
-#### Edges
+#### certify_vulns: Edges
 | To | Edge Field | On Delete |
 | --- | --- | --- |
 | vulnerability_ids | certify_vulns_vulnerability_ids_vulnerability | vulnerability_id |
 | package_versions | certify_vulns_package_versions_package | package_id |
 
-#### Natural Keys (Composite Unique Constraints)
+### dependencies
+#### dependencies: Natural Keys
 | Keys |
 | --- |
-| `[package, vulnerability, collector, scanner_uri, scanner_version, origin, db_uri, db_version]` |
+| [dependency_type, justification, origin, collector, document_ref, package, dependent_package_version] |
 
-### dependencies
-#### Fields
+#### dependencies: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
@@ -222,19 +227,22 @@
 | package_id | UUID |  |
 | dependent_package_version_id | UUID |  |
 
-#### Edges
+#### dependencies: Edges
 | To | Edge Field | On Delete |
 | --- | --- | --- |
 | package_versions | dependencies_package_versions_package | package_id |
 | package_versions | dependencies_package_versions_dependent_package_version | dependent_package_version_id |
 
-#### Natural Keys (Composite Unique Constraints)
+### has_metadata
+#### has_metadata: Natural Keys
 | Keys |
 | --- |
-| `[dependency_type, justification, origin, collector, document_ref, package, dependent_package_version]` |
+| [key, value, justification, origin, collector, timestamp, document_ref, source] |
+| [key, value, justification, origin, collector, timestamp, document_ref, package_version] |
+| [key, value, justification, origin, collector, timestamp, document_ref, package_name] |
+| [key, value, justification, origin, collector, timestamp, document_ref, artifact] |
 
-### has_metadata
-#### Fields
+#### has_metadata: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
@@ -250,7 +258,7 @@
 | package_name_id | UUID |  |
 | artifact_id | UUID |  |
 
-#### Edges
+#### has_metadata: Edges
 | To | Edge Field | On Delete |
 | --- | --- | --- |
 | source_names | has_metadata_source_names_source | source_id |
@@ -258,16 +266,14 @@
 | package_names | has_metadata_package_names_all_versions | package_name_id |
 | artifacts | has_metadata_artifacts_artifact | artifact_id |
 
-#### Natural Keys (Composite Unique Constraints)
+### has_source_ats
+#### has_source_ats: Natural Keys
 | Keys |
 | --- |
-| `[key, value, justification, origin, collector, timestamp, document_ref, source]` |
-| `[key, value, justification, origin, collector, timestamp, document_ref, package_version]` |
-| `[key, value, justification, origin, collector, timestamp, document_ref, package_name]` |
-| `[key, value, justification, origin, collector, timestamp, document_ref, artifact]` |
+| [source, package_version, justification, origin, collector, known_since, document_ref] |
+| [source, package_name, justification, origin, collector, known_since, document_ref] |
 
-### has_source_ats
-#### Fields
+#### has_source_ats: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
@@ -280,21 +286,20 @@
 | package_name_id | UUID |  |
 | source_id | UUID |  |
 
-#### Edges
+#### has_source_ats: Edges
 | To | Edge Field | On Delete |
 | --- | --- | --- |
 | package_versions | has_source_ats_package_versions_package_version | package_version_id |
 | package_names | has_source_ats_package_names_all_versions | package_name_id |
 | source_names | has_source_ats_source_names_source | source_id |
 
-#### Natural Keys (Composite Unique Constraints)
+### hash_equals
+#### hash_equals: Natural Keys
 | Keys |
 | --- |
-| `[source, package_version, justification, origin, collector, known_since, document_ref]` |
-| `[source, package_name, justification, origin, collector, known_since, document_ref]` |
+| [art, equal_art, artifacts_hash, origin, justification, collector, document_ref] |
 
-### hash_equals
-#### Fields
+#### hash_equals: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
@@ -306,19 +311,19 @@
 | art_id | UUID |  |
 | equal_art_id | UUID |  |
 
-#### Edges
+#### hash_equals: Edges
 | To | Edge Field | On Delete |
 | --- | --- | --- |
 | artifacts | hash_equals_artifacts_artifact_a | art_id |
 | artifacts | hash_equals_artifacts_artifact_b | equal_art_id |
 
-#### Natural Keys (Composite Unique Constraints)
+### licenses
+#### licenses: Natural Keys
 | Keys |
 | --- |
-| `[art, equal_art, artifacts_hash, origin, justification, collector, document_ref]` |
+| [name, inline_hash, list_version_hash] |
 
-### licenses
-#### Fields
+#### licenses: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
@@ -328,13 +333,14 @@
 | inline_hash | STRING | An opaque hash on the linline text |
 | list_version_hash | STRING | An opaque hash on the list_version text |
 
-#### Natural Keys (Composite Unique Constraints)
+### occurrences
+#### occurrences: Natural Keys
 | Keys |
 | --- |
-| `[name, inline_hash, list_version_hash]` |
+| [justification, origin, collector, document_ref, artifact, package] |
+| [justification, origin, collector, document_ref, artifact, source] |
 
-### occurrences
-#### Fields
+#### occurrences: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
@@ -346,21 +352,20 @@
 | package_id | UUID |  |
 | source_id | UUID |  |
 
-#### Edges
+#### occurrences: Edges
 | To | Edge Field | On Delete |
 | --- | --- | --- |
 | artifacts | occurrences_artifacts_artifact | artifact_id |
 | package_versions | occurrences_package_versions_package | package_id |
 | source_names | occurrences_source_names_source | source_id |
 
-#### Natural Keys (Composite Unique Constraints)
+### package_names
+#### package_names: Natural Keys
 | Keys |
 | --- |
-| `[justification, origin, collector, document_ref, artifact, package]` |
-| `[justification, origin, collector, document_ref, artifact, source]` |
+| [name, namespace, type] |
 
-### package_names
-#### Fields
+#### package_names: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
@@ -368,13 +373,14 @@
 | namespace | STRING | In the pURL representation, each PackageNamespace matches the pkg:<type>/<namespace>/ partial pURL |
 | name | STRING |  |
 
-#### Natural Keys (Composite Unique Constraints)
+### package_versions
+#### package_versions: Natural Keys
 | Keys |
 | --- |
-| `[name, namespace, type]` |
+| [hash, name] |
+| [version, subpath, qualifiers, name] |
 
-### package_versions
-#### Fields
+#### package_versions: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
@@ -384,19 +390,18 @@
 | hash | STRING | A SHA1 of the qualifiers, subpath, version fields after sorting keys, used to ensure uniqueness of version records. |
 | name_id | UUID |  |
 
-#### Edges
+#### package_versions: Edges
 | To | Edge Field | On Delete |
 | --- | --- | --- |
 | package_names | package_versions_package_names_versions | name_id |
 
-#### Natural Keys (Composite Unique Constraints)
+### pkg_equals
+#### pkg_equals: Natural Keys
 | Keys |
 | --- |
-| `[hash, name]` |
-| `[version, subpath, qualifiers, name]` |
+| [pkg, equal_pkg, packages_hash, origin, justification, collector, document_ref] |
 
-### pkg_equals
-#### Fields
+#### pkg_equals: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
@@ -408,19 +413,22 @@
 | pkg_id | UUID |  |
 | equal_pkg_id | UUID |  |
 
-#### Edges
+#### pkg_equals: Edges
 | To | Edge Field | On Delete |
 | --- | --- | --- |
 | package_versions | pkg_equals_package_versions_package_a | pkg_id |
 | package_versions | pkg_equals_package_versions_package_b | equal_pkg_id |
 
-#### Natural Keys (Composite Unique Constraints)
+### point_of_contacts
+#### point_of_contacts: Natural Keys
 | Keys |
 | --- |
-| `[pkg, equal_pkg, packages_hash, origin, justification, collector, document_ref]` |
+| [since, email, info, justification, origin, collector, document_ref, source] |
+| [since, email, info, justification, origin, collector, document_ref, package_version] |
+| [since, email, info, justification, origin, collector, document_ref, package_name] |
+| [since, email, info, justification, origin, collector, document_ref, artifact] |
 
-### point_of_contacts
-#### Fields
+#### point_of_contacts: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
@@ -436,7 +444,7 @@
 | package_name_id | UUID |  |
 | artifact_id | UUID |  |
 
-#### Edges
+#### point_of_contacts: Edges
 | To | Edge Field | On Delete |
 | --- | --- | --- |
 | source_names | point_of_contacts_source_names_source | source_id |
@@ -444,16 +452,13 @@
 | package_names | point_of_contacts_package_names_all_versions | package_name_id |
 | artifacts | point_of_contacts_artifacts_artifact | artifact_id |
 
-#### Natural Keys (Composite Unique Constraints)
+### slsa_attestations
+#### slsa_attestations: Natural Keys
 | Keys |
 | --- |
-| `[since, email, info, justification, origin, collector, document_ref, source]` |
-| `[since, email, info, justification, origin, collector, document_ref, package_version]` |
-| `[since, email, info, justification, origin, collector, document_ref, package_name]` |
-| `[since, email, info, justification, origin, collector, document_ref, artifact]` |
+| [subject, origin, collector, document_ref, build_type, slsa_version, built_by, built_from_hash, started_on, finished_on] |
 
-### slsa_attestations
-#### Fields
+#### slsa_attestations: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
@@ -469,20 +474,20 @@
 | built_by_id | UUID |  |
 | subject_id | UUID |  |
 
-#### Edges
+#### slsa_attestations: Edges
 | To | Edge Field | On Delete |
 | --- | --- | --- |
 | builders | slsa_attestations_builders_built_by | built_by_id |
 | artifacts | slsa_attestations_artifacts_subject | subject_id |
 | artifacts | slsa_attestation_built_from |  |
 
-#### Natural Keys (Composite Unique Constraints)
+### source_names
+#### source_names: Natural Keys
 | Keys |
 | --- |
-| `[subject, origin, collector, document_ref, build_type, slsa_version, built_by, built_from_hash, started_on, finished_on]` |
+| [type, namespace, name, commit, tag] |
 
-### source_names
-#### Fields
+#### source_names: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
@@ -492,13 +497,13 @@
 | commit | STRING |  |
 | tag | STRING |  |
 
-#### Natural Keys (Composite Unique Constraints)
+### vuln_equals
+#### vuln_equals: Natural Keys
 | Keys |
 | --- |
-| `[type, namespace, name, commit, tag]` |
+| [vuln, equal_vuln, vulnerabilities_hash, justification, origin, collector, document_ref] |
 
-### vuln_equals
-#### Fields
+#### vuln_equals: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
@@ -510,32 +515,32 @@
 | vuln_id | UUID |  |
 | equal_vuln_id | UUID |  |
 
-#### Edges
+#### vuln_equals: Edges
 | To | Edge Field | On Delete |
 | --- | --- | --- |
 | vulnerability_ids | vuln_equals_vulnerability_ids_vulnerability_a | vuln_id |
 | vulnerability_ids | vuln_equals_vulnerability_ids_vulnerability_b | equal_vuln_id |
 
-#### Natural Keys (Composite Unique Constraints)
+### vulnerability_ids
+#### vulnerability_ids: Natural Keys
 | Keys |
 | --- |
-| `[vuln, equal_vuln, vulnerabilities_hash, justification, origin, collector, document_ref]` |
+| [vulnerability_id, type] |
 
-### vulnerability_ids
-#### Fields
+#### vulnerability_ids: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
 | vulnerability_id | STRING |  |
 | type | STRING |  |
 
-#### Natural Keys (Composite Unique Constraints)
+### vulnerability_metadata
+#### vulnerability_metadata: Natural Keys
 | Keys |
 | --- |
-| `[vulnerability_id, type]` |
+| [vulnerability_id, score_type, score_value, timestamp, origin, collector, document_ref] |
 
-### vulnerability_metadata
-#### Fields
+#### vulnerability_metadata: Fields
 | Field | Type | Comment |
 | --- | --- | --- |
 | id | UUID |  |
@@ -547,13 +552,8 @@
 | document_ref | STRING |  |
 | vulnerability_id_id | UUID |  |
 
-#### Edges
+#### vulnerability_metadata: Edges
 | To | Edge Field | On Delete |
 | --- | --- | --- |
 | vulnerability_ids | vulnerability_metadata_vulnerability_ids_vulnerability_id | vulnerability_id_id |
-
-#### Natural Keys (Composite Unique Constraints)
-| Keys |
-| --- |
-| `[vulnerability_id, score_type, score_value, timestamp, origin, collector, document_ref]` |
 
