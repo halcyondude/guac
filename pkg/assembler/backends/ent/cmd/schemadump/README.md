@@ -26,9 +26,6 @@ go run pkg/assembler/backends/ent/cmd/schemadump/main.go -o markdown > schema.md
 
 # Generate KuzuDB DDL
 go run pkg/assembler/backends/ent/cmd/schemadump/main.go -o kuzu > schema.ddl
-
-# Automate all formats into generated/ directory
-./pkg/assembler/backends/ent/cmd/schemadump/generate.sh
 ```
 
 ## How It Works
@@ -83,7 +80,7 @@ This script contains:
 - `CREATE NODE TABLE` statements for all entities, with primary keys.
 - `CREATE REL TABLE` statements for all edges, including their properties.
 
-The output is compatible with the [Cypher](https://kuzudb.github.io/docs/cypher/) dialect used by KuzuDB.
+The output is compatible with the DDL dialect used by KuzuDB and it's forks.
 
 ### 4. Machine-Readable Ontology (JSON)
 A robust ingestion pipeline can be built using Python and DuckDB to bridge the gap between GUAC's Postgres data and RyuGraph.
@@ -118,6 +115,7 @@ Once loaded into RyuGraph/KuzuDB, you can run powerful Cypher queries for supply
 
 **Scenario: Transitive Dependency Search**
 Find all projects that depend on a specific library (e.g., `log4j`), potentially identifying impact blast radius.
+
 ```cypher
 MATCH (root:Project)-[:DEPENDS_ON*]->(dep:Package)
 WHERE dep.name = 'log4j'
@@ -126,6 +124,7 @@ RETURN root.name, dep.version
 
 **Scenario: License Drift Detection**
 Search for cases where the declared license of a package differs from the discovered license in its newer versions.
+
 ```cypher
 MATCH (p:Package)-[:HAS_VERSION]->(v1:PackageVersion)-[:HAS_LICENSE]->(l1:License)
 MATCH (p)-[:HAS_VERSION]->(v2:PackageVersion)-[:HAS_LICENSE]->(l2:License)
