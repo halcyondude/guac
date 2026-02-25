@@ -32,6 +32,22 @@ var schemadumpOptions struct {
 var schemadumpCmd = &cobra.Command{
 	Use:   "schemadump",
 	Short: "dump the GUAC schema in various formats (JSON, Kuzu DDL, Markdown)",
+	Long: `schemadump is a utility to export the GUAC GraphQL ontology into external formats.
+It programmatically parses the GraphQL schema definitions to ensure compatibility with 
+external analytical tools and documentation formats.
+
+Supported formats:
+  - json: A machine-readable representation of the graph ontology.
+  - kuzu: Data Definition Language (DDL) for KuzuDB and LadybugDB.
+  - markdown: Rich, human-readable documentation of entities and relationships.`,
+	Example: `  # Export schema as Kuzu DDL
+  guacone schemadump --format=kuzu > schema.cypher
+
+  # Generate Markdown documentation
+  guacone schemadump --format=markdown > ontology.md
+
+  # Export as JSON from a custom schema directory
+  guacone schemadump --format=json --schema-dir=./my-schemas`,
 	Run: func(cmd *cobra.Command, args []string) {
 		schema, err := schemaexport.LoadGraphQLSchema(schemadumpOptions.schemaDir)
 		if err != nil {
