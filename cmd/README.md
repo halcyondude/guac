@@ -25,6 +25,7 @@ user-facing:
   - collector <type> - runs the <type> collector once, includes "files" (once by
     default, optional poll)
   - query <name> - runs the canned <name> query.
+  - schemadump - dumps the GUAC GraphQL ontology as JSON or Kuzu DDL.
 
 services:
 
