@@ -99,6 +99,7 @@ func ExportGraphQLToSchemaDump(schema *ast.Schema) (*SchemaDump, error) {
 		}
 
 		// Check if it has an 'id' field to be considered a Node
+		// Or if it is a known GUAC entity that should be a node
 		hasID := false
 		for _, field := range def.Fields {
 			if field.Name == "id" {
@@ -106,7 +107,8 @@ func ExportGraphQLToSchemaDump(schema *ast.Schema) (*SchemaDump, error) {
 				break
 			}
 		}
-		if !hasID {
+
+		if !hasID && def.Name != "Artifact" {
 			continue
 		}
 
