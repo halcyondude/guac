@@ -65,15 +65,7 @@ def main():
     # Kuzu/Ladybug DDL often contains multiple statements.
     # We split by semicolon and execute each.
     
-    # Remove comments before splitting to avoid issues
-    lines = ddl.split("\n")
-    no_comments = []
-    for line in lines:
-        if not line.strip().startswith("--"):
-            no_comments.append(line)
-    
-    clean_ddl = "\n".join(no_comments)
-    statements = clean_ddl.split(";")
+    statements = ddl.split(";")
     for stmt in statements:
         clean_stmt = stmt.strip()
         if not clean_stmt:
