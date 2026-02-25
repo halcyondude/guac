@@ -70,3 +70,30 @@ func TestGenerateKuzuDDL(t *testing.T) {
 	assert.Contains(t, ddl, "CREATE NODE TABLE Company")
 	assert.Contains(t, ddl, "CREATE REL TABLE Person_worksAt (FROM Person TO Company)")
 }
+
+func TestGenerateMarkdown(t *testing.T) {
+	dump := &SchemaDump{
+		Nodes: []Node{
+			{
+				Table:       "Person",
+				Description: "A person in the system",
+				Properties: []Property{
+					{Name: "id", Type: "STRING", Description: "Unique identifier"},
+					{Name: "name", Type: "STRING", Description: "Full name"},
+				},
+				Edges: []Edge{
+					{ToTable: "Company", Symbol: "Person_worksAt", Column: "worksAt", Description: "Where they work"},
+				},
+			},
+		},
+	}
+
+	md := GenerateMarkdown(dump)
+	assert.Contains(t, md, "# GUAC Ontology Documentation")
+	assert.Contains(t, md, "## Table of Contents")
+	assert.Contains(t, md, "### Person")
+	assert.Contains(t, md, "A person in the system")
+	assert.Contains(t, md, "| id | STRING | Unique identifier |")
+	assert.Contains(t, md, "### Person_worksAt")
+	assert.Contains(t, md, "Where they work")
+}

@@ -16,10 +16,13 @@ guacone schemadump --format=json > schema.json
 
 # Generate KuzuDB/LadybugDB DDL (Cypher)
 guacone schemadump --format=kuzu > schema.cypher
+
+# Generate rich Markdown documentation
+guacone schemadump --format=markdown > ontology.md
 ```
 
 ### Options
-- `--format`: Output format. Supported: `json`, `kuzu` (default `json`).
+- `--format`: Output format. Supported: `json`, `kuzu`, `markdown` (default `json`).
 - `--schema-dir`: Directory containing GUAC `.graphql` schema files (default `pkg/assembler/graphql/schema`).
 
 ## Architecture

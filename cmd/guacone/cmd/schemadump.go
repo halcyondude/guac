@@ -31,7 +31,7 @@ var schemadumpOptions struct {
 
 var schemadumpCmd = &cobra.Command{
 	Use:   "schemadump",
-	Short: "dump the GUAC schema in various formats (JSON, Kuzu DDL)",
+	Short: "dump the GUAC schema in various formats (JSON, Kuzu DDL, Markdown)",
 	Run: func(cmd *cobra.Command, args []string) {
 		schema, err := schemaexport.LoadGraphQLSchema(schemadumpOptions.schemaDir)
 		if err != nil {
@@ -56,6 +56,9 @@ var schemadumpCmd = &cobra.Command{
 		case "kuzu":
 			ddl := schemaexport.GenerateKuzuDDL(dump)
 			fmt.Print(ddl)
+		case "markdown":
+			md := schemaexport.GenerateMarkdown(dump)
+			fmt.Print(md)
 		default:
 			fmt.Fprintf(os.Stderr, "unknown format: %s\n", schemadumpOptions.format)
 			os.Exit(1)
@@ -64,7 +67,7 @@ var schemadumpCmd = &cobra.Command{
 }
 
 func init() {
-	schemadumpCmd.Flags().StringVar(&schemadumpOptions.format, "format", "json", "output format: json, kuzu")
+	schemadumpCmd.Flags().StringVar(&schemadumpOptions.format, "format", "json", "output format: json, kuzu, markdown")
 	schemadumpCmd.Flags().StringVar(&schemadumpOptions.schemaDir, "schema-dir", "pkg/assembler/graphql/schema", "directory containing GraphQL schema files")
 	rootCmd.AddCommand(schemadumpCmd)
 }

@@ -27,22 +27,24 @@ import (
 )
 
 type Property struct {
-	Name    string `json:"name"`
-	Type    string `json:"type"`
-	Comment string `json:"comment,omitempty"`
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	Description string `json:"description,omitempty"`
 }
 
 type Node struct {
-	Table      string     `json:"table"`
-	Properties []Property `json:"properties"`
-	Edges      []Edge     `json:"edges,omitempty"`
+	Table       string     `json:"table"`
+	Description string     `json:"description,omitempty"`
+	Properties  []Property `json:"properties"`
+	Edges       []Edge     `json:"edges,omitempty"`
 }
 
 type Edge struct {
-	ToTable    string     `json:"to_table"`
-	Column     string     `json:"column,omitempty"` // For GraphQL, this might be the field name
-	Symbol     string     `json:"symbol"`
-	Properties []Property `json:"properties,omitempty"`
+	ToTable     string     `json:"to_table"`
+	Column      string     `json:"column,omitempty"` // For GraphQL, this might be the field name
+	Symbol      string     `json:"symbol"`
+	Description string     `json:"description,omitempty"`
+	Properties  []Property `json:"properties,omitempty"`
 }
 
 type SchemaDump struct {
@@ -113,7 +115,8 @@ func ExportGraphQLToSchemaDump(schema *ast.Schema) (*SchemaDump, error) {
 		}
 
 		node := Node{
-			Table: def.Name,
+			Table:       def.Name,
+			Description: def.Description,
 		}
 
 		for _, field := range def.Fields {
@@ -124,9 +127,9 @@ func ExportGraphQLToSchemaDump(schema *ast.Schema) (*SchemaDump, error) {
 			if !ok {
 				// Handle built-in scalars or custom scalars
 				node.Properties = append(node.Properties, Property{
-					Name:    field.Name,
-					Type:    mapGraphQLTypeToKuzu(fieldType),
-					Comment: field.Description,
+					Name:        field.Name,
+					Type:        mapGraphQLTypeToKuzu(fieldType),
+					Description: field.Description,
 				})
 				continue
 			}
@@ -134,9 +137,9 @@ func ExportGraphQLToSchemaDump(schema *ast.Schema) (*SchemaDump, error) {
 			switch fieldDef.Kind {
 			case ast.Scalar, ast.Enum:
 				node.Properties = append(node.Properties, Property{
-					Name:    field.Name,
-					Type:    mapGraphQLTypeToKuzu(fieldType),
-					Comment: field.Description,
+					Name:        field.Name,
+					Type:        mapGraphQLTypeToKuzu(fieldType),
+					Description: field.Description,
 				})
 			case ast.Object, ast.Union, ast.Interface:
 				// If it's an object, check if it has an ID
@@ -158,17 +161,18 @@ func ExportGraphQLToSchemaDump(schema *ast.Schema) (*SchemaDump, error) {
 					toTables := getToTables(schema, fieldDef)
 					for _, toTable := range toTables {
 						node.Edges = append(node.Edges, Edge{
-							ToTable: toTable,
-							Symbol:  fmt.Sprintf("%s_%s", def.Name, field.Name),
-							Column:  field.Name,
+							ToTable:     toTable,
+							Symbol:      fmt.Sprintf("%s_%s", def.Name, field.Name),
+							Column:      field.Name,
+							Description: field.Description,
 						})
 					}
 				} else {
 					// It's a nested object without ID, treat as STRING (JSON)
 					node.Properties = append(node.Properties, Property{
-						Name:    field.Name,
-						Type:    "STRING",
-						Comment: field.Description,
+						Name:        field.Name,
+						Type:        "STRING",
+						Description: field.Description,
 					})
 				}
 			}
