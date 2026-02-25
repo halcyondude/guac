@@ -62,21 +62,14 @@ def main():
     with open("%s", "r") as f:
         ddl = f.read()
     
-    # Kuzu/Ladybug DDL often contains multiple statements.
-    # We split by semicolon and execute each.
-    
-    statements = ddl.split(";")
-    for stmt in statements:
-        clean_stmt = stmt.strip()
-        if not clean_stmt:
-            continue
-        print(f"Executing statement: {clean_stmt[:50]}...")
-        try:
-            conn.execute(clean_stmt)
-        except Exception as e:
-            print(f"Error executing statement: {e}")
-            print(f"Full statement: {clean_stmt}")
-            raise e
+    print("Executing entire DDL script...")
+    try:
+        conn.execute(ddl)
+    except Exception as e:
+        print(f"Error executing DDL: {e}")
+        raise e
+
+    print("Successfully loaded DDL into LadybugDB")
 
     print("Successfully loaded DDL into LadybugDB")
 
